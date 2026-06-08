@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>星際救援：尋找宇航員 Space Rescue</title>
     <style>
+        /* ─── 1. 全域背景：藍色星雲圖 ─── */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -12,177 +13,232 @@
             user-select: none;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(18, 18, 30, 0.65), rgba(26, 26, 40, 0.65)), 
-                        url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat fixed;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: linear-gradient(rgba(10, 10, 25, 0.4), rgba(15, 10, 35, 0.5)), 
+                        url('bg_space.jpg') center/cover no-repeat fixed;
             color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             min-height: 100vh;
-            padding: 20px 10px;
+            padding: 30px 10px;
             overflow-y: auto;
         }
         #game-container {
             text-align: center;
             width: 100%;
-            max-width: 800px;
+            max-width: 850px;
         }
+
+        /* ─── 2. 霓虹發光標題 ─── */
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #00f2fe;
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe, #9b51e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            animation: titlePulse 2s infinite alternate;
         }
+        @keyframes titlePulse {
+            from { filter: drop-shadow(0 0 2px rgba(0, 242, 254, 0.4)); }
+            to { filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.8)); }
+        }
+
+        /* ─── 3. 太空船儀表板 (HUD) ─── */
         #hud {
             display: flex;
             justify-content: space-around;
-            background: rgba(15, 15, 26, 0.6);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(6, 6, 18, 0.8);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            box-shadow: inset 0 0 15px rgba(0, 242, 254, 0.1), 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .hud-item {
+            color: #a0aec0;
         }
         .hud-item span {
             font-weight: bold;
-            color: #4facfe;
-        }
-        #game-canvas {
-            width: 100%;
-            height: 450px;
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
-                        url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;
-            border: 3px solid #00f2fe;
-            border-radius: 15px;
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            box-shadow: 0 0 25px rgba(0, 242, 254, 0.3);
-            margin-bottom: 25px;
-        }
-        
-        /* ─── 核心修改：固定讀取同資料夾底下的 22.png ─── */
-        .gem {
-            width: 45px;  
-            height: 45px;
-            position: absolute;
-            background: url('22.png') center/contain no-repeat;
-            cursor: pointer;
-            transition: transform 0.1s;
-            filter: drop-shadow(0 0 5px #00f2fe);
-        }
-        .gem:hover {
-            transform: scale(1.2);
-            filter: brightness(1.2) drop-shadow(0 0 12px #00f2fe);
+            color: #00f2fe;
+            text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.3rem;
         }
 
-        /* 畫面彈窗 */
+        /* ─── 4. 遊戲主舞台 ─── */
+        #game-canvas {
+            width: 100%;
+            height: 480px;
+            background: #000; /* 基礎純黑背景 */
+            border: 3px solid #00f2fe;
+            border-radius: 18px;
+            position: relative;
+            cursor: crosshair;
+            overflow: hidden;
+            box-shadow: 0 0 35px rgba(0, 242, 254, 0.35), inset 0 0 20px rgba(0,0,0,0.6);
+            margin-bottom: 30px;
+        }
+        
+        /* ─── 5. 遊戲中漂浮的角色：使用 22.png ─── */
+        .gem {
+            width: 55px;  
+            height: 55px;
+            position: absolute;
+            background: url('22.png') center/contain no-repeat; /* 遊戲中點擊的目標 */
+            cursor: pointer;
+            transition: transform 0.1s;
+            filter: drop-shadow(0 0 6px rgba(0, 242, 254, 0.9));
+        }
+        .gem:hover {
+            transform: scale(1.2) rotate(5deg);
+            filter: brightness(1.2) drop-shadow(0 0 15px #00f2fe);
+        }
+
+        /* ─── 6. 介面彈窗：包含第一頁的大戰艦主視覺 ─── */
         .screen {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 18, 0.94);
+            z-index: 10;
+            border-radius: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10;
-            border-radius: 12px;
-            padding: 20px;
+            padding: 30px;
         }
+
+        /* 第一頁大廳：完美把 2.jpg 戰艦圖大面積亮出來 */
+        #start-screen {
+            background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.4)), 
+                        url('2.jpg') center/cover no-repeat; /* 2.JPG 當作第一頁戰艦主視覺 */
+        }
+
+        /* 成功或失敗畫面：維持有質感的深色毛玻璃，方便看分數 */
+        #next-screen, #gameover-screen {
+            background: rgba(5, 5, 15, 0.88);
+            backdrop-filter: blur(6px);
+        }
+
+        /* 懸浮在戰艦圖前方的高科技透明文字卡片 */
+        .intro-card {
+            background: rgba(6, 6, 18, 0.82);
+            padding: 25px 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 600px;
+            text-align: center;
+            backdrop-filter: blur(4px);
+        }
+
         .screen h2 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
+            font-size: 2.3rem;
+            margin-bottom: 12px;
             color: #00f2fe;
+            text-shadow: 0 0 15px rgba(0, 242, 254, 0.7);
         }
         .screen p {
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            color: #ccc;
-            max-width: 550px;
-            line-height: 1.5;
+            font-size: 1.1rem;
+            margin-bottom: 22px;
+            color: #e2e8f0;
+            line-height: 1.6;
         }
+
+        /* ─── 7. 科幻能量按鈕 ─── */
         button {
-            padding: 12px 35px;
+            padding: 12px 40px;
             font-size: 1.2rem;
             font-weight: bold;
+            letter-spacing: 1px;
             background: linear-gradient(45deg, #00f2fe, #4facfe);
             border: none;
-            border-radius: 25px;
+            border-radius: 30px;
             color: white;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 242, 254, 0.4);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.6);
+            box-shadow: 0 8px 25px rgba(0, 242, 254, 0.7);
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
         }
         .hidden {
             display: none !important;
         }
 
-        /* 下方區塊 */
+        /* 下方區塊面板 */
         #bottom-section {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 25px;
             width: 100%;
             margin-top: 10px;
             text-align: left;
         }
         .info-box {
             flex: 1;
-            min-width: 280px;
-            background: rgba(15, 15, 26, 0.7);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 20px;
+            min-width: 300px;
+            background: rgba(10, 10, 20, 0.75);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 242, 254, 0.15);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .info-box h3 {
             color: #00f2fe;
             font-size: 1.4rem;
-            margin-bottom: 15px;
-            border-bottom: 2px solid rgba(0, 242, 254, 0.3);
-            padding-bottom: 5px;
+            margin-bottom: 18px;
+            border-bottom: 2px solid rgba(0, 242, 254, 0.2);
+            padding-bottom: 8px;
         }
         .info-box ul {
             list-style-type: none;
         }
         .info-box li {
             font-size: 1rem;
-            margin-bottom: 10px;
-            color: #ddd;
-            line-height: 1.5;
-        }
-        .info-box li strong {
-            color: #fff;
+            margin-bottom: 12px;
+            color: #cbd5e1;
+            line-height: 1.6;
         }
 
-        /* 排行榜表格 */
+        /* 排行榜 */
         #leaderboard-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 5px;
         }
         #leaderboard-table th, #leaderboard-table td {
-            padding: 10px;
+            padding: 12px;
             text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         #leaderboard-table th {
             color: #4facfe;
             font-weight: bold;
         }
+        #leaderboard-table td {
+            color: #e2e8f0;
+        }
         .top-rank {
             color: #ffff00 !important;
             font-weight: bold;
+            text-shadow: 0 0 8px rgba(255, 255, 0, 0.5);
+        }
+        .top-rank td {
+            color: #ffff00 !important;
         }
     </style>
 </head>
@@ -192,46 +248,47 @@
     <h1>星際救援：尋找宇航員</h1>
     
     <div id="hud">
-        <div class="hud-item">星域 (關卡): <span id="level-display">1</span>/10</div>
-        <div class="hud-item">待救援人數: <span id="gems-display">0</span></div>
-        <div class="hud-item">救援積分: <span id="score-display">0</span></div>
-        <div class="hud-item">氧氣剩餘 (時間): <span id="time-display">0</span> 秒</div>
+        <div class="hud-item">🌌 星域 (關卡): <span id="level-display">1</span>/10</div>
+        <div class="hud-item">👨‍🚀 待救援人數: <span id="gems-display">0</span></div>
+        <div class="hud-item">💎 救援積分: <span id="score-display">0</span></div>
+        <div class="hud-item">🚨 氧氣剩餘: <span id="time-display">0</span> 秒</div>
     </div>
 
     <div id="game-canvas">
         <div id="start-screen" class="screen">
-            <h2>收到求救訊號！</h2>
-            <p>多名宇航員在風暴中失聯，正漂流在不穩定的星區中。請在氧氣耗盡前點擊並救回所有的宇航員！準備好展開搜救任務了嗎？</p>
-            <button id="start-btn">啟動搜救艇</button>
+            <div class="intro-card">
+                <h2>🚨 收到求救訊號！</h2>
+                <p>多名宇航員在宇宙風暴中不幸失聯，目前正漂流在極度不穩定的未知星區中。請在搜救艇氧氣耗盡前，點擊並安全救回所有人！</p>
+                <button id="start-btn">啟動搜救任務</button>
+            </div>
         </div>
 
         <div id="next-screen" class="screen hidden">
-            <h2>安全救回！</h2>
+            <h2> 任務成功 (星域安全) </h2>
             <p id="next-screen-text">準備進入下一個失聯星域...</p>
-            <button id="next-btn">前往下個星域</button>
+            <button id="next-btn">安全躍遷至下個星域</button>
         </div>
 
         <div id="gameover-screen" class="screen hidden">
             <h2 id="gameover-title">任務結束</h2>
             <p id="gameover-text">最終得分：0</p>
-            <button id="restart-btn">再次搜救</button>
+            <button id="restart-btn">重返星空搜救</button>
         </div>
     </div>
 
     <div id="bottom-section">
         <div class="info-box">
-            <h3>📖 怎麼玩這個遊戲？</h3>
+            <h3>📖 搜救艇任務簡報</h3>
             <ul>
-                <li>• <strong>操作方式：</strong> 畫面上會出現四處漂流的可愛宇航員，請用滑鼠（或手指）點擊牠們進行救援。</li>
-                <li>• <strong>太空漂移：</strong> 宇航員會緩慢地在星空中移動反彈，考驗你的動態視力與瞄準。</li>
-                <li>• <strong>通關條件：</strong> 在上方的<strong>「氧氣剩餘」</strong>歸零前，將<strong>「待救援人數」</strong>清空即可安全躍遷。</li>
-                <li>• <strong>關卡與難度：</strong> 總共需探索 10 個星域。越往深處，失聯的宇航員越多、漂流速度也會微幅加快！</li>
-                <li>• <strong>榮譽積分：</strong> 每成功救回一人可獲得積分，<strong>星域越深，獲得的救援積分就越高</strong>！</li>
+                <li>• <strong>操作指南：</strong> 畫面中會出現四處漂移的失聯宇航員，請快速使用滑鼠點擊他們進行回收。</li>
+                <li>• <strong>慣性漂流：</strong> 宇航員們（22.png）會在太空中緩慢移動並碰撞反彈，關卡越深移動速度越快！</li>
+                <li>• <strong>通關任務：</strong> 必須在上方的<strong>「氧氣剩餘」</strong>歸零前，將該星域的<strong>「待救援人數」</strong>歸零。</li>
+                <li>• <strong>星際榮譽：</strong> 每成功救回一人可獲得積分，<strong>關卡越深，獲得的救援難度積分加成越高</strong>！</li>
             </ul>
         </div>
 
         <div class="info-box">
-            <h3>🏆 頂尖救援隊排行榜 (Top 5)</h3>
+            <h3>🏆 頂尖搜救艦隊榮譽榜 (Top 5)</h3>
             <table id="leaderboard-table">
                 <thead>
                     <tr>
@@ -273,12 +330,6 @@
         document.getElementById('start-btn').onclick = startGame;
         document.getElementById('next-btn').onclick = startNextLevel;
         document.getElementById('restart-btn').onclick = restartGame;
-        
-        document.getElementById('level-display').textContent = currentLevel;
-        document.getElementById('gems-display').textContent = gemsRemaining;
-        document.getElementById('score-display').textContent = score;
-        document.getElementById('time-display').textContent = timeLeft;
-
         showLeaderboard();
     };
 
@@ -314,7 +365,7 @@
 
     function generateGems(count, speed) {
         const canvas = document.getElementById('game-canvas');
-        const size = 45; 
+        const size = 55; 
 
         const canvasWidth = canvas.clientWidth - size;
         const canvasHeight = canvas.clientHeight - size;
@@ -383,16 +434,12 @@
     function updateTimer() {
         timeLeft--;
         document.getElementById('time-display').textContent = timeLeft;
-
-        if (timeLeft <= 0) {
-            endGame(false);
-        }
+        if (timeLeft <= 0) endGame(false);
     }
 
     function checkLevelComplete() {
         clearInterval(timerInterval);
         clearInterval(gameLoopInterval);
-        
         if (currentLevel < 10) {
             document.getElementById('next-screen-text').textContent = `成功營救第 ${currentLevel} 星域！下一關仍有 ${levelSettings[currentLevel + 1].gemCount} 名宇航員等待救援。`;
             document.getElementById('next-screen').classList.remove('hidden');
@@ -423,12 +470,8 @@
             title.style.color = "#ff007f";
             text.textContent = `很遺憾，搜救艇氧氣不足。你在第 ${currentLevel} 星域被迫折返，最終積分：${score} 分`;
         }
-
         gameOverScreen.classList.remove('hidden');
-        
-        setTimeout(function() {
-            checkAndSaveScore(score);
-        }, 600);
+        setTimeout(function() { checkAndSaveScore(score); }, 600);
     }
 
     function restartGame() {
@@ -439,27 +482,16 @@
     function showLeaderboard() {
         let localData = localStorage.getItem('gemCollector_leaderboard');
         let leaderboard = localData ? JSON.parse(localData) : [
-            { name: "傳奇艦長", score: 2000 },
-            { name: "搜救先鋒", score: 1200 },
-            { name: "王牌飛行員", score: 600 },
-            { name: "實習太空員", score: 300 },
-            { name: "星際路人", score: 100 }
+            { name: "傳奇艦長", score: 2000 }, { name: "搜救先鋒", score: 1200 },
+            { name: "王牌飛行員", score: 600 }, { name: "實習太空員", score: 300 }, { name: "星際路人", score: 100 }
         ];
-
         leaderboard.sort((a, b) => b.score - a.score);
-        
         const tbody = document.getElementById('leaderboard-body');
         tbody.innerHTML = '';
-        
         leaderboard.slice(0, 5).forEach((player, index) => {
             const tr = document.createElement('tr');
             if(index === 0) tr.classList.add('top-rank');
-            
-            tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${player.name}</td>
-                <td>${player.score}</td>
-            `;
+            tr.innerHTML = `<td>${index + 1}</td><td>${player.name}</td><td>${player.score}</td>`;
             tbody.appendChild(tr);
         });
     }
@@ -467,28 +499,20 @@
     function checkAndSaveScore(finalScore) {
         let localData = localStorage.getItem('gemCollector_leaderboard');
         let leaderboard = localData ? JSON.parse(localData) : [
-            { name: "傳奇艦長", score: 2000 },
-            { name: "搜救先鋒", score: 1200 },
-            { name: "王牌飛行員", score: 600 },
-            { name: "實習太空員", score: 300 },
-            { name: "星際路人", score: 100 }
+            { name: "傳奇艦長", score: 2000 }, { name: "搜救先鋒", score: 1200 },
+            { name: "王牌飛行員", score: 600 }, { name: "實習太空員", score: 300 }, { name: "星際路人", score: 100 }
         ];
-
         if (leaderboard.length < 5 || finalScore > leaderboard[leaderboard.length - 1].score) {
-            let playerName = prompt(` 🎉 太震撼了！你的救援積分 ${finalScore} 分成功擠進前五名榮譽榜！\n請留下你的救援隊長大名：`);
-            
+            let playerName = prompt(` 🎉 恭喜進入榮譽榜！請留下你的救援隊長大名：`);
             if (playerName === null) return; 
             if (playerName.trim() === "") playerName = "無名英雄";
-
             leaderboard.push({ name: playerName.trim(), score: finalScore });
             leaderboard.sort((a, b) => b.score - a.score);
             leaderboard = leaderboard.slice(0, 5);
-
             localStorage.setItem('gemCollector_leaderboard', JSON.stringify(leaderboard));
             showLeaderboard();
         }
     }
 </script>
-
 </body>
 </html>
